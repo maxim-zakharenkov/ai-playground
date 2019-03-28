@@ -144,7 +144,7 @@ public class ChessPosition implements IPosition {
 
 	/** Returns piece at board using x,y system. x & y are in [0,7] */
 	public byte getPieceAt(int x, int y) {
-		return field[x + y*8];
+		return field[toCell(x,y)];
 	}
 	
 	public Collection<IMove> getPossibleMovesAt(int cell, Collection<IMove> dest) {
@@ -223,13 +223,13 @@ public class ChessPosition implements IPosition {
 		return null;
 	}
 
-	void addMoveIf(boolean condition, byte thisPiece, int srcCell, int x, int y, byte emptyMoveType, byte takeMoveType, Collection<IMove> dest) {
+	void addMoveIf(boolean condition, byte thisPiece, int srcCell, int x, int y, byte emptyMoveType, byte takeMoveType, byte promoteToPiece, Collection<IMove> dest) {
 		if(condition) {
 			int destCell = x + 1 + y*8;
 			byte takePiece = field[destCell];
 			if(ChessPiece.isSameColor(thisPiece, takePiece)) { 
 				byte moveType = (takePiece == ChessPiece.EMPTY) ? emptyMoveType : takeMoveType;
-				dest.add(new ChessMove(thisPiece, srcCell, destCell, takePiece, moveType));
+				dest.add(new ChessMove(thisPiece, srcCell, destCell, takePiece, moveType, promoteToPiece));
 			}
 		}
 	}
@@ -249,20 +249,22 @@ public class ChessPosition implements IPosition {
 		byte thisPiece = ChessPiece.W_KING;
 		byte emptyMoveType = ChessMoveType.W_MOVE;
 		byte takeMoveType = ChessMoveType.W_TAKE;
+		boolean opponentColor = ChessColor.BLACK;
 		
-		addMoveIf(x < 7, thisPiece, srcCell, x + 1, y, emptyMoveType, takeMoveType, dest);
-		addMoveIf(x < 7 && y < 7, thisPiece, srcCell, x + 1, y + 1, emptyMoveType, takeMoveType, dest);
-		addMoveIf(x < 7 && y > 0, thisPiece, srcCell, x + 1, y - 1, emptyMoveType, takeMoveType, dest);
+		addMoveIf(x < 7 && !isCellUnderAttackOfColor(x + 1, y, opponentColor), thisPiece, srcCell, x + 1, y, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
+		addMoveIf(x < 7 && y < 7 && !isCellUnderAttackOfColor(x + 1, y + 1, opponentColor), thisPiece, srcCell, x + 1, y + 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
+		addMoveIf(x < 7 && y > 0 && !isCellUnderAttackOfColor(x + 1, y - 1, opponentColor), thisPiece, srcCell, x + 1, y - 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
 		
-		addMoveIf(x > 0, thisPiece, srcCell, x - 1, y, emptyMoveType, takeMoveType, dest);
-		addMoveIf(x > 0 && y < 7, thisPiece, srcCell, x - 1, y + 1, emptyMoveType, takeMoveType, dest);
-		addMoveIf(x > 0 && y > 0, thisPiece, srcCell, x - 1, y - 1, emptyMoveType, takeMoveType, dest);
+		addMoveIf(x > 0 && !isCellUnderAttackOfColor(x - 1, y, opponentColor), thisPiece, srcCell, x - 1, y, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
+		addMoveIf(x > 0 && y < 7 && !isCellUnderAttackOfColor(x - 1, y + 1, opponentColor), thisPiece, srcCell, x - 1, y + 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
+		addMoveIf(x > 0 && y > 0 && !isCellUnderAttackOfColor(x - 1, y - 1, opponentColor), thisPiece, srcCell, x - 1, y - 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
 		
-		addMoveIf(y < 7, thisPiece, srcCell, x, y + 1, emptyMoveType, takeMoveType, dest);
-		addMoveIf(y > 0, thisPiece, srcCell, x, y - 1, emptyMoveType, takeMoveType, dest);
+		addMoveIf(y < 7 && !isCellUnderAttackOfColor(x, y + 1, opponentColor), thisPiece, srcCell, x, y + 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
+		addMoveIf(y > 0 && !isCellUnderAttackOfColor(x, y - 1, opponentColor), thisPiece, srcCell, x, y - 1, emptyMoveType, takeMoveType, ChessPiece.EMPTY, dest);
 		
 		return dest;
 	}
+
 
 	private boolean canWhiteKingLongCastle() {
 		return 
@@ -274,8 +276,16 @@ public class ChessPosition implements IPosition {
 					&& !isCellUnderAttackOfColor(C1, ChessColor.BLACK)
 					&& !isCellUnderAttackOfColor(D1, ChessColor.BLACK);
 	}
+	
+	private boolean isCellUnderAttackOfColor(int x, int y, boolean color) {
+		return isCellUnderAttackOfColor(toCell(x, y), color);
+	}
 
-	private boolean isCellUnderAttackOfColor(int d1, boolean color) {
+	private int toCell(int x, int y) {
+		return x + y*8;
+	}
+
+	private boolean isCellUnderAttackOfColor(int cell, boolean color) {
 		
 		return false;
 	}

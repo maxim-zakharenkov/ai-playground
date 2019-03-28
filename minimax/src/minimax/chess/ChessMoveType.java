@@ -24,6 +24,12 @@ public interface ChessMoveType {
 	/** Black short castling */
 	public static final byte B_SHORT_CASTLE = 6;
 	
-	/** White long castling */
+	/** Black long castling */
 	public static final byte B_LONG_CASTLE = 7;
+	
+	/** Black promotes pawn */
+	public static final byte B_PROMOTION = 8;
+	
+	/** White promotes pawn */
+	public static final byte W_PROMOTION = 9;
 }
